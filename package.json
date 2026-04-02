@@ -13,7 +13,8 @@
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
     "sync:products": "tsx scripts/sync-products-from-fs.ts",
-    "push:products-batched": "bash scripts/push-public-products-batched.sh",
+    "push:products": "bash scripts/push-products-to-github.sh",
+    "push:products-batched": "bash scripts/push-products-to-github.sh",
     "postinstall": "prisma generate"
   },
   "prisma": {
