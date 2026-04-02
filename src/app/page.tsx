@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { Suspense } from "react";
 import { HeroEditorial } from "@/components/shop/HeroEditorial";
 import { ProductCard } from "@/components/shop/ProductCard";
+import type { ProductCardProduct } from "@/components/shop/ProductCard";
 import { ProductFilters } from "@/components/shop/ProductFilters";
 import { ProductMarquee } from "@/components/shop/ProductMarquee";
 import { TrustSignals } from "@/components/shop/TrustSignals";
@@ -9,42 +10,63 @@ import { getShopVisualPaths, pickHeroFrames } from "@/lib/shop-visuals";
 import { buildProductOrderBy, buildProductWhere, parseShopParams } from "@/lib/product-query";
 import { prisma } from "@/lib/prisma";
 
+async function loadShopData(sp: ReturnType<typeof parseShopParams>) {
+  const where = buildProductWhere(sp);
+  const orderBy = buildProductOrderBy(sp.sort);
+
+  try {
+    const [products, categories, brandRows, conditionRows] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy,
+        include: { category: true },
+      }),
+      prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
+      prisma.product.findMany({
+        where: { brand: { not: null } },
+        select: { brand: true },
+        distinct: ["brand"],
+      }),
+      prisma.product.findMany({
+        where: { condition: { not: null } },
+        select: { condition: true },
+        distinct: ["condition"],
+      }),
+    ]);
+
+    const brands = brandRows.map((b) => b.brand).filter((b): b is string => b != null).sort();
+    const conditions = conditionRows
+      .map((c) => c.condition)
+      .filter((c): c is string => c != null)
+      .sort();
+
+    return { products, categories, brands, conditions, dbError: false as const };
+  } catch (e) {
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        "[homepage] Database query failed — showing layout without catalog. Set DATABASE_URL / DIRECT_URL and run migrations.",
+        e,
+      );
+    }
+    return {
+      products: [] as ProductCardProduct[],
+      categories: [] as { slug: string; name: string }[],
+      brands: [] as string[],
+      conditions: [] as string[],
+      dbError: true as const,
+    };
+  }
+}
+
 export default async function HomePage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = parseShopParams(await searchParams);
-  const where = buildProductWhere(sp);
-  const orderBy = buildProductOrderBy(sp.sort);
-
-  const [products, categories, brandRows, conditionRows] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy,
-      include: { category: true },
-    }),
-    prisma.category.findMany({ orderBy: { sortOrder: "asc" } }),
-    prisma.product.findMany({
-      where: { brand: { not: null } },
-      select: { brand: true },
-      distinct: ["brand"],
-    }),
-    prisma.product.findMany({
-      where: { condition: { not: null } },
-      select: { condition: true },
-      distinct: ["condition"],
-    }),
-  ]);
+  const { products, categories, brands, conditions, dbError } = await loadShopData(sp);
 
   const visuals = getShopVisualPaths(24);
-
-  const brands = brandRows.map((b) => b.brand).filter((b): b is string => b != null).sort();
-  const conditions = conditionRows
-    .map((c) => c.condition)
-    .filter((c): c is string => c != null)
-    .sort();
-
   const heroFrames = pickHeroFrames(visuals, 5);
 
   return (
@@ -60,6 +82,22 @@ export default async function HomePage({
           id="collectie"
           className="scroll-mt-[max(7rem,calc(5.5rem+env(safe-area-inset-top)))] space-y-8 min-[400px]:space-y-10 md:space-y-12"
         >
+          {dbError ? (
+            <div
+              className="animate-reveal-fade rounded-[var(--radius-xl)] border border-amber-800/25 bg-amber-50/90 p-4 text-sm text-amber-950 backdrop-blur-sm"
+              role="alert"
+            >
+              <p className="font-semibold">Database niet bereikbaar</p>
+              <p className="mt-2 leading-relaxed text-amber-950/85">
+                Zet geldige <code className="rounded bg-white/80 px-1">DATABASE_URL</code> en{" "}
+                <code className="rounded bg-white/80 px-1">DIRECT_URL</code> in <code className="rounded bg-white/80 px-1">.env</code>,
+                voeg <code className="rounded bg-white/80 px-1">?connect_timeout=10</code> toe aan de URL om lang hangen te
+                voorkomen, en run <code className="rounded bg-white/80 px-1">npx prisma migrate dev</code> (lokaal) of koppel
+                Supabase. De hero en beelden hierboven werken zonder database.
+              </p>
+            </div>
+          ) : null}
+
           <header className="stagger-child-delays space-y-4 border-b border-[var(--border)] pb-8">
             <p
               className="animate-reveal-fade text-xs font-semibold uppercase tracking-[0.35em] text-[var(--accent)]"
@@ -109,7 +147,11 @@ export default async function HomePage({
               className="animate-slide-right min-w-0"
               style={{ "--reveal-delay": "300ms" } as CSSProperties}
             >
-              {products.length === 0 ? (
+              {dbError ? (
+                <p className="rounded-[var(--radius-xl)] border border-dashed border-[var(--border-strong)] bg-[var(--bg-card)] p-8 text-center text-sm text-[var(--fg-muted)] backdrop-blur-sm">
+                  Productlijst wordt geladen zodra de database bereikbaar is.
+                </p>
+              ) : products.length === 0 ? (
                 <p className="animate-reveal-scale rounded-[var(--radius-xl)] border border-dashed border-[var(--border-strong)] bg-[var(--bg-card)] p-10 text-center text-[var(--fg-muted)] backdrop-blur-sm">
                   Geen producten gevonden met deze filters. Wis de filters of voeg beelden toe in{" "}
                   <code className="rounded bg-white/70 px-1.5 py-0.5 text-[var(--fg)]">public/products/&lt;categorie&gt;/</code>{" "}

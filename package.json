@@ -9,6 +9,7 @@
     "dev": "next dev -p 3080",
     "build": "next build",
     "start": "next start",
+    "preview": "next build && next start -p 3080",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
     "sync:products": "tsx scripts/sync-products-from-fs.ts",
