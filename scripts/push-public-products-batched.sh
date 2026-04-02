@@ -1,13 +1,38 @@
 #!/usr/bin/env bash
 # Batch-commit and push files under public/products/ (default 99 files per commit).
+#
+# Run ONE command per line (do not paste the "# comment" lines from docs — zsh may error).
+#
 # Usage:
-#   ./scripts/push-public-products-batched.sh [--dry-run] [--batch N] [path]
+#   ./scripts/push-public-products-batched.sh [--dry-run] [--batch N] [--path DIR]
+#   SYNC_FROM=products ./scripts/push-public-products-batched.sh [--dry-run]
+#
 # Optional: copy from repo-root mirror first (ignored by git):
 #   SYNC_FROM=products ./scripts/push-public-products-batched.sh
 #
 # Requires: clean git state except for the target path (stash other changes first).
 
 set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Batch-commit and push files under public/products/ (default 99 files per commit).
+
+Run ONE shell command per line — do not paste whole docs blocks (zsh may try to run "# ..." lines).
+
+Usage:
+  ./scripts/push-public-products-batched.sh [--dry-run] [--batch N] [--path DIR]
+  SYNC_FROM=products ./scripts/push-public-products-batched.sh [--dry-run]
+
+  --path DIR   folder to upload (default: public/products). No bare words like "batches".
+
+Examples:
+  npm run push:products-batched
+  ./scripts/push-public-products-batched.sh --dry-run
+  SYNC_FROM=products ./scripts/push-public-products-batched.sh
+EOF
+  exit "${1:-0}"
+}
 
 cd "$(git rev-parse --show-toplevel)"
 
@@ -17,18 +42,25 @@ TARGET="public/products"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --help|-h) usage 0 ;;
     --dry-run) DRY_RUN=true; shift ;;
     --batch)
       BATCH="${2:?--batch needs a number}"
       shift 2
       ;;
+    --path)
+      TARGET="${2:?--path needs a directory}"
+      TARGET="${TARGET%/}"
+      shift 2
+      ;;
     -*)
-      echo "Unknown option: $1" >&2
+      echo "Unknown option: $1 (try --help)" >&2
       exit 1
       ;;
     *)
-      TARGET="${1%/}"
-      shift
+      echo "Unexpected argument: $1" >&2
+      echo "Use --path DIR for a custom folder (bare words like \"batches\" are not allowed)." >&2
+      exit 1
       ;;
   esac
 done
@@ -90,6 +122,11 @@ rm -f "${pending}.raw"
 total="$(wc -l <"$pending" | tr -d ' ')"
 if [[ -z "$total" || "$total" -eq 0 ]]; then
   echo "Nothing to commit under $TARGET (already synced with git)."
+  if [[ "${SYNC_FROM:-}" == "products" ]]; then
+    echo "Hint: ./products may be empty, or files are already tracked under public/products/." >&2
+  else
+    echo "Hint: add images under public/products/<category>/ or run with SYNC_FROM=products if you keep a mirror in ./products/." >&2
+  fi
   rm -f "$pending"
   exit 0
 fi
