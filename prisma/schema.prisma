@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Supabase: use the pooled connection for DATABASE_URL (PgBouncer, port 6543) and
+// the direct connection for DIRECT_URL (port 5432) so migrations work on Vercel.
+// https://www.prisma.io/docs/orm/overview/databases/supabase
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String?
+  email            String?   @unique
+  emailVerified    DateTime?
+  image            String?
+  passwordHash     String?
+  role             String    @default("CUSTOMER")
+  stripeCustomerId String?   @unique
+  accounts         Account[]
+  sessions         Session[]
+  orders           Order[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  sortOrder   Int       @default(0)
+  products    Product[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String
+  /// Zichtbare kenmerken (Nederlands), o.a. afgeleid van map + bestandsnaam bij sync
+  features    String[]    @default([])
+  priceCents  Int
+  currency    String      @default("eur")
+  imagePath   String?
+  condition   String?
+  brand       String?
+  era         String?
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  inStock     Boolean     @default(true)
+  stockCount  Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id                    String      @id @default(cuid())
+  userId                String?
+  user                  User?       @relation(fields: [userId], references: [id])
+  stripeSessionId       String?     @unique
+  stripePaymentIntentId String?
+  stripeInvoiceId       String?
+  stripeInvoiceUrl      String?
+  stripeInvoicePdfUrl   String?
+  status                String
+  totalCents            Int
+  currency              String
+  email                 String
+  createdAt             DateTime    @default(now())
+  items                 OrderItem[]
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  priceCents Int
+  name       String
+}
+
+model SiteSettings {
+  id                              String   @id @default("default")
+  googleAnalyticsMeasurementId    String?
+  googleTagManagerContainerId     String?
+  googleSearchConsoleVerification String?
+  updatedAt                       DateTime @updatedAt
+}
