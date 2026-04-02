@@ -11,6 +11,9 @@ type Props = {
   conditions: string[];
 };
 
+const fieldClass =
+  "w-full rounded-lg border border-[var(--border-strong)] bg-white/80 px-3 py-2.5 text-[var(--fg)] shadow-sm transition-shadow focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-dim)]";
+
 export function ProductFilters({ categories, brands, conditions }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,20 +53,26 @@ export function ProductFilters({ categories, brands, conditions }: Props) {
   );
 
   return (
-    <div className="space-y-4 rounded-lg border border-[#d4c4a8] bg-[#f5f0e8] p-4 text-sm text-[#3d2e24]">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="font-[family-name:var(--font-display)] text-lg">Filters</h2>
-        {pending ? <span className="text-xs text-[#8a7a68]">Bijwerken…</span> : null}
+    <div className="stagger-children min-w-0 space-y-5 rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--bg-card)] p-4 text-sm text-[var(--fg-muted)] shadow-[var(--shadow-soft)] backdrop-blur-md min-[400px]:p-5">
+      <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] pb-3">
+        <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold tracking-tight text-[var(--fg)]">
+          Filters
+        </h2>
+        {pending ? (
+          <span className="text-xs font-medium uppercase tracking-wider text-[var(--accent)]">Bijwerken…</span>
+        ) : null}
       </div>
 
-      <div className="block">
-        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[#8a7a68]">Zoeken</span>
-        <div className="flex gap-2">
+      <div>
+        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--fg-soft)]">
+          Zoeken
+        </span>
+        <div className="flex flex-col gap-2 min-[420px]:flex-row min-[420px]:items-stretch">
           <input
             type="search"
             value={qDraft}
             name="q"
-            className="min-w-0 flex-1 rounded border border-[#c9b896] bg-white px-3 py-2"
+            className={`${fieldClass} min-h-10 min-w-0 flex-1`}
             placeholder="Model, merk…"
             onChange={(e) => setQDraft(e.target.value)}
             onKeyDown={(e) => {
@@ -72,7 +81,7 @@ export function ProductFilters({ categories, brands, conditions }: Props) {
           />
           <button
             type="button"
-            className="shrink-0 rounded bg-[#3d2e24] px-3 py-2 text-white hover:bg-[#2c1810]"
+            className="min-h-10 w-full shrink-0 rounded-lg bg-gradient-to-br from-[var(--fg)] to-[#2a2622] px-4 py-2.5 text-sm font-medium text-[#faf8f5] shadow-md transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] min-[420px]:w-auto min-[420px]:self-center"
             onClick={() => push({ q: qDraft.trim() || null })}
           >
             Zoek
@@ -81,12 +90,10 @@ export function ProductFilters({ categories, brands, conditions }: Props) {
       </div>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[#8a7a68]">Categorie (map)</span>
-        <select
-          className="w-full rounded border border-[#c9b896] bg-white px-3 py-2"
-          value={current.category}
-          onChange={(e) => push({ category: e.target.value || null })}
-        >
+        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--fg-soft)]">
+          Categorie (map)
+        </span>
+        <select className={fieldClass} value={current.category} onChange={(e) => push({ category: e.target.value || null })}>
           <option value="">Alle categorieën</option>
           {categories.map((c) => (
             <option key={c.slug} value={c.slug}>
@@ -97,12 +104,8 @@ export function ProductFilters({ categories, brands, conditions }: Props) {
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[#8a7a68]">Merk</span>
-        <select
-          className="w-full rounded border border-[#c9b896] bg-white px-3 py-2"
-          value={current.brand}
-          onChange={(e) => push({ brand: e.target.value || null })}
-        >
+        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--fg-soft)]">Merk</span>
+        <select className={fieldClass} value={current.brand} onChange={(e) => push({ brand: e.target.value || null })}>
           <option value="">Alle merken</option>
           {brands.map((b) => (
             <option key={b} value={b}>
@@ -113,9 +116,11 @@ export function ProductFilters({ categories, brands, conditions }: Props) {
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[#8a7a68]">Conditie</span>
+        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--fg-soft)]">
+          Conditie
+        </span>
         <select
-          className="w-full rounded border border-[#c9b896] bg-white px-3 py-2"
+          className={fieldClass}
           value={current.condition}
           onChange={(e) => push({ condition: e.target.value || null })}
         >
@@ -128,47 +133,50 @@ export function ProductFilters({ categories, brands, conditions }: Props) {
         </select>
       </label>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[#8a7a68]">Min. €</span>
+          <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--fg-soft)]">
+            Min. €
+          </span>
           <input
             type="number"
             min={0}
             step={1}
-            className="w-full rounded border border-[#c9b896] bg-white px-3 py-2"
+            className={fieldClass}
             defaultValue={current.min}
             onChange={(e) => push({ min: e.target.value || null })}
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[#8a7a68]">Max. €</span>
+          <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--fg-soft)]">
+            Max. €
+          </span>
           <input
             type="number"
             min={0}
             step={1}
-            className="w-full rounded border border-[#c9b896] bg-white px-3 py-2"
+            className={fieldClass}
             defaultValue={current.max}
             onChange={(e) => push({ max: e.target.value || null })}
           />
         </label>
       </div>
 
-      <label className="flex cursor-pointer items-center gap-2">
+      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-[var(--border)] bg-white/40 px-3 py-2.5 transition-colors hover:bg-white/70">
         <input
           type="checkbox"
+          className="h-4 w-4 rounded border-[var(--border-strong)] text-[var(--accent)]"
           checked={current.stock === "1"}
           onChange={(e) => push({ stock: e.target.checked ? "1" : null })}
         />
-        <span>Alleen op voorraad</span>
+        <span className="font-medium text-[var(--fg)]">Alleen op voorraad</span>
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[#8a7a68]">Sorteren</span>
-        <select
-          className="w-full rounded border border-[#c9b896] bg-white px-3 py-2"
-          value={current.sort}
-          onChange={(e) => push({ sort: e.target.value })}
-        >
+        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--fg-soft)]">
+          Sorteren
+        </span>
+        <select className={fieldClass} value={current.sort} onChange={(e) => push({ sort: e.target.value })}>
           <option value="newest">Nieuwste</option>
           <option value="price-asc">Prijs oplopend</option>
           <option value="price-desc">Prijs aflopend</option>
@@ -178,7 +186,7 @@ export function ProductFilters({ categories, brands, conditions }: Props) {
 
       <button
         type="button"
-        className="w-full rounded border border-[#8a7a68] py-2 text-sm hover:bg-[#ebe3d6]"
+        className="w-full rounded-lg border border-[var(--border-strong)] py-2.5 text-sm font-medium text-[var(--fg-muted)] transition-all hover:border-[var(--accent)] hover:bg-white/60 hover:text-[var(--fg)]"
         onClick={() => router.push("/", { scroll: false })}
       >
         Alles wissen

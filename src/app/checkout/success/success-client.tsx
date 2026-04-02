@@ -47,40 +47,43 @@ export function CheckoutSuccessClient({ sessionId }: { sessionId: string }) {
   }, [sessionId]);
 
   if (pending && !order) {
-    return <p className="text-[#5c4a3a]">Bestelling en factuur bevestigen…</p>;
+    return <p className="animate-reveal-fade text-[var(--fg-muted)]">Bestelling en factuur bevestigen…</p>;
   }
 
   if (!order) {
     return (
-      <p className="text-[#5c4a3a]">
+      <p className="animate-reveal-fade text-[var(--fg-muted)]">
         Uw betaling is gelukt. De bestelling verschijnt zo in uw account. Stripe stuurt ook een bevestiging per e-mail.
       </p>
     );
   }
 
   return (
-    <div className="space-y-4 text-left">
-      <p className="text-[#5c4a3a]">
-        Totaal <strong className="text-[#2c1810]">{formatMoney(order.totalCents, order.currency)}</strong> — bevestigd
-        naar <strong>{order.email}</strong>.
+    <div className="stagger-children space-y-4 text-left">
+      <p className="text-[var(--fg-muted)]">
+        Totaal{" "}
+        <strong className="font-[family-name:var(--font-display)] text-lg font-semibold text-[var(--fg)]">
+          {formatMoney(order.totalCents, order.currency)}
+        </strong>{" "}
+        — bevestigd naar <strong className="text-[var(--fg)]">{order.email}</strong>.
       </p>
-      <ul className="rounded border border-[#d4c4a8] bg-[#faf7f2] p-4 text-sm">
+      <ul className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--bg-card)] p-4 text-sm shadow-[var(--shadow-soft)] backdrop-blur-sm">
         {order.items.map((i, idx) => (
-          <li key={`${i.slug}-${idx}`} className="flex justify-between gap-2 py-1">
-            <span>
+          <li key={`${i.slug}-${idx}`} className="flex justify-between gap-2 border-b border-[var(--border)] py-2 last:border-0">
+            <span className="text-[var(--fg-muted)]">
               {i.quantity}× {i.name}
             </span>
-            <span>{formatMoney(i.priceCents * i.quantity, order.currency)}</span>
+            <span className="font-medium text-[var(--fg)]">{formatMoney(i.priceCents * i.quantity, order.currency)}</span>
           </li>
         ))}
       </ul>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
         {order.stripeInvoiceUrl ? (
           <a
             href={order.stripeInvoiceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md bg-[#3d2e24] px-4 py-2 text-sm font-medium text-[#faf7f2] hover:bg-[#2c1810]"
+            className="rounded-full bg-gradient-to-r from-[var(--fg)] to-[#2c2824] px-5 py-2 text-sm font-semibold text-[#faf8f5] shadow-md transition-transform hover:scale-[1.02]"
           >
             Stripe-factuur openen
           </a>
@@ -90,12 +93,15 @@ export function CheckoutSuccessClient({ sessionId }: { sessionId: string }) {
             href={order.stripeInvoicePdfUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md border border-[#8a7a68] px-4 py-2 text-sm hover:bg-[#ebe3d6]"
+            className="rounded-full border border-[var(--border-strong)] bg-[var(--bg-elevated)] px-5 py-2 text-sm font-medium text-[var(--fg)] backdrop-blur-sm transition-colors hover:border-[var(--accent)]"
           >
             PDF downloaden
           </a>
         ) : null}
-        <Link href="/account" className="rounded-md border border-[#8a7a68] px-4 py-2 text-sm hover:bg-[#ebe3d6]">
+        <Link
+          href="/account"
+          className="rounded-full border border-[var(--border-strong)] bg-[var(--bg-elevated)] px-5 py-2 text-sm font-medium text-[var(--fg)] backdrop-blur-sm transition-colors hover:border-[var(--accent)]"
+        >
           Account &amp; facturen
         </Link>
       </div>

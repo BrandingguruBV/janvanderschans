@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { formatMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
+const card =
+  "rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-[var(--shadow-soft)] backdrop-blur-sm";
+
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user || session.user.role !== "ADMIN") {
@@ -26,38 +29,40 @@ export default async function AdminDashboardPage() {
   const revenue = paidSum._sum.totalCents ?? 0;
 
   return (
-    <div className="space-y-8">
-      <h1 className="font-[family-name:var(--font-display)] text-3xl">Financiën</h1>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-[#d4c4a8] bg-[#faf7f2] p-6">
-          <p className="text-sm uppercase tracking-wide text-[#8a7a68]">Totale omzet (betaalde orders)</p>
-          <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[#2c1810]">{formatMoney(revenue, "eur")}</p>
+    <div className="stagger-child-delays space-y-8">
+      <h1 className="animate-reveal-up font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-[var(--fg)]">
+        Financiën
+      </h1>
+      <div className="animate-reveal-up grid gap-4 sm:grid-cols-2">
+        <div className={card}>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--fg-soft)]">Totale omzet (betaalde orders)</p>
+          <p className="mt-3 font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--fg)]">{formatMoney(revenue, "eur")}</p>
         </div>
-        <div className="rounded-lg border border-[#d4c4a8] bg-[#faf7f2] p-6">
-          <p className="text-sm uppercase tracking-wide text-[#8a7a68]">Betaalde bestellingen</p>
-          <p className="mt-2 font-[family-name:var(--font-display)] text-3xl text-[#2c1810]">{count}</p>
+        <div className={card}>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--fg-soft)]">Betaalde bestellingen</p>
+          <p className="mt-3 font-[family-name:var(--font-display)] text-3xl font-semibold text-[var(--fg)]">{count}</p>
         </div>
       </div>
 
-      <section>
-        <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl">Recente aankopen</h2>
-        <div className="overflow-x-auto rounded-lg border border-[#d4c4a8]">
+      <section className="animate-reveal-up">
+        <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-semibold text-[var(--fg)]">Recente aankopen</h2>
+        <div className="overflow-x-auto rounded-[var(--radius-xl)] border border-[var(--border)] shadow-[var(--shadow-soft)]">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="bg-[#ebe3d6] text-[#3d2e24]">
+            <thead className="border-b border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--fg)] backdrop-blur-sm">
               <tr>
-                <th className="p-3 font-medium">Datum</th>
-                <th className="p-3 font-medium">E-mail</th>
-                <th className="p-3 font-medium">Totaal</th>
-                <th className="p-3 font-medium">Regels</th>
+                <th className="p-3 font-semibold">Datum</th>
+                <th className="p-3 font-semibold">E-mail</th>
+                <th className="p-3 font-semibold">Totaal</th>
+                <th className="p-3 font-semibold">Regels</th>
               </tr>
             </thead>
             <tbody>
               {recent.map((o) => (
-                <tr key={o.id} className="border-t border-[#d4c4a8]">
-                  <td className="p-3 text-[#5c4a3a]">{o.createdAt.toLocaleString("nl-NL")}</td>
-                  <td className="p-3">{o.email}</td>
-                  <td className="p-3 font-medium">{formatMoney(o.totalCents, o.currency)}</td>
-                  <td className="p-3 text-[#5c4a3a]">
+                <tr key={o.id} className="border-t border-[var(--border)] bg-[var(--bg-card)]/50">
+                  <td className="p-3 text-[var(--fg-muted)]">{o.createdAt.toLocaleString("nl-NL")}</td>
+                  <td className="p-3 text-[var(--fg)]">{o.email}</td>
+                  <td className="p-3 font-medium text-[var(--fg)]">{formatMoney(o.totalCents, o.currency)}</td>
+                  <td className="p-3 text-[var(--fg-muted)]">
                     {o.items.map((i) => `${i.quantity}× ${i.name}`).join(", ")}
                   </td>
                 </tr>

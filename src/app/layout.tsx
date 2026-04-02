@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Cormorant_Garamond, Outfit } from "next/font/google";
 import "./globals.css";
 import { AnalyticsScripts } from "@/components/Analytics";
 import { Footer } from "@/components/layout/Footer";
@@ -11,14 +11,22 @@ import { getSiteSettings } from "@/lib/site-settings";
 /** Voorkomt Prisma tijdens `next build` waar geen database beschikbaar is. */
 export const dynamic = "force-dynamic";
 
-const display = Fraunces({
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
+const display = Cormorant_Garamond({
   subsets: ["latin"],
   variable: "--font-display",
+  weight: ["400", "500", "600", "700"],
 });
 
-const sans = DM_Sans({
+const sans = Outfit({
   subsets: ["latin"],
   variable: "--font-sans",
+  weight: ["300", "400", "500", "600"],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -46,7 +54,7 @@ export default async function RootLayout({
 
   return (
     <html lang="nl" className={`${display.variable} ${sans.variable} h-full`}>
-      <body className="flex min-h-full flex-col bg-[#faf7f2] font-sans text-[#2c1810] antialiased">
+      <body className="premium-page-bg premium-grain flex min-h-full min-w-0 flex-col antialiased">
         {gtm ? (
           <noscript>
             <iframe
@@ -65,7 +73,12 @@ export default async function RootLayout({
         <Providers>
           <CartProvider>
             <Header />
-            <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">{children}</main>
+            <main
+              className="animate-reveal-fade relative z-10 mx-auto w-full min-w-0 max-w-6xl flex-1 py-10 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-10 md:py-14 md:pl-[max(1.5rem,env(safe-area-inset-left))] md:pr-[max(1.5rem,env(safe-area-inset-right))]"
+              style={{ "--reveal-delay": "340ms" } as React.CSSProperties}
+            >
+              {children}
+            </main>
             <Footer />
           </CartProvider>
         </Providers>
