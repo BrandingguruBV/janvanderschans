@@ -73,10 +73,7 @@ export default async function RootLayout({
         <Providers>
           <CartProvider>
             <Header />
-            <main
-              className="animate-reveal-fade relative z-10 mx-auto w-full min-w-0 max-w-6xl flex-1 py-10 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-10 md:py-14 md:pl-[max(1.5rem,env(safe-area-inset-left))] md:pr-[max(1.5rem,env(safe-area-inset-right))]"
-              style={{ "--reveal-delay": "340ms" } as React.CSSProperties}
-            >
+            <main className="relative z-10 mx-auto w-full min-w-0 max-w-6xl flex-1 py-10 pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-10 md:py-14 md:pl-[max(1.5rem,env(safe-area-inset-left))] md:pr-[max(1.5rem,env(safe-area-inset-right))]">
               {children}
             </main>
             <Footer />
