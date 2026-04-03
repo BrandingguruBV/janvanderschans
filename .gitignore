@@ -22,8 +22,9 @@
 
 # misc
 .DS_Store
-# Mirror of images; shop serves from public/products (sync + static). Do not commit — huge binaries break git push.
-/products/
+# Local image mirror (optional). Tracked: products/README.md only. On GitHub, assets live under public/products/.
+/products/**
+!/products/README.md
 /prisma/dev.db
 /prisma/dev.db-journal
 *.pem
